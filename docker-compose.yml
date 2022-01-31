@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  product_service:
+    build:
+      context: product-service
+      dockerfile: Dockerfile
+    command: 'npm run dev'
+    ports:
+      - 3001:3001
+    volumes:
+      - ./product-service:/app
+    depends_on:
+      - db_product_service
+
+  account_service:
+    build:
+      context: account-service
+      dockerfile: Dockerfile
+    command: 'python3 server.py' # ecommerce-account-service-jvbs
+    # command: 'gunicorn -w 5 -b 0.0.0.0:5000 "server:create_app()"'
+    # command: 'alembic upgrade head' # executar migration
+    ports:
+      - 5000:5000
+    volumes: 
+      - ./account-service:/app
+    depends_on: 
+      - db_account_service
+
+  queue_product_service:
+    build:
+      context: product-service
+      dockerfile: Dockerfile
+    command: 'node src/queue/consumer.mjs'
+    depends_on:
+      - db_product_service
+
+  db_product_service:
+    image: mysql:5.7.22
+    restart: always
+    environment:
+      MYSQL_DATABASE: product
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./product-service/.dbdata:/var/lib/mysql
+    ports:
+      - 33066:3306
+
+  db_account_service:
+    image: mysql:5.7.22
+    restart: always
+    command: --max_allowed_packet=32505856
+    environment: 
+      MYSQL_DATABASE: user
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes: 
+      - ./account-service/.dbdata:/var/lib/mysql
+    ports: 
+      - 33068:3306
+
