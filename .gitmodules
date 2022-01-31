@@ -1,0 +1,6 @@
+[submodule "product-service"]
+	path = product-service
+	url = https://github.com/joaoo-vittor/product-service.git
+[submodule "account-service"]
+	path = account-service
+	url = https://github.com/joaoo-vittor/account-service.git
